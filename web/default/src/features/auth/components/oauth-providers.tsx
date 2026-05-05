@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useOAuthLogin } from '../hooks/use-oauth-login'
+import { useXCitySSO } from '../hooks/use-xcity-sso'
 import type { SystemStatus } from '../types'
 
 type OAuthProvidersProps = {
@@ -35,6 +36,7 @@ export function OAuthProviders({
   isWeChatLoading = false,
 }: OAuthProvidersProps) {
   const { t } = useTranslation()
+  const xcity = useXCitySSO()
   const {
     isLoading,
     githubButtonText,
@@ -46,6 +48,26 @@ export function OAuthProviders({
     handleTelegramLogin,
     handleCustomOAuthLogin,
   } = useOAuthLogin(status)
+
+  // XCity SSO mode: collapse all auth options to a single primary button that
+  // reuses the existing OIDC flow (auth.xcity.one is configured as the OIDC
+  // provider). Other providers are intentionally not rendered.
+  if (xcity.enabled && status?.oidc_enabled) {
+    return (
+      <div className={cn('space-y-3', className)}>
+        <div className='flex flex-col gap-2'>
+          <Button
+            type='button'
+            disabled={disabled || isLoading}
+            onClick={handleOIDCLogin}
+            className='h-11 w-full justify-center gap-2 rounded-lg'
+          >
+            {t('Sign in with {{name}}', { name: xcity.providerLabel })}
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const providerButtons: ProviderButton[] = []
 
