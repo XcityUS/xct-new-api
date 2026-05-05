@@ -1,6 +1,7 @@
 import { Link, useSearch } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useStatus } from '@/hooks/use-status'
+import { useXCitySSO } from '../hooks/use-xcity-sso'
 import { AuthLayout } from '../auth-layout'
 import { TermsFooter } from '../components/terms-footer'
 import { UserAuthForm } from './components/user-auth-form'
@@ -9,6 +10,7 @@ export function SignIn() {
   const { t } = useTranslation()
   const { redirect } = useSearch({ from: '/(auth)/sign-in' })
   const { status } = useStatus()
+  const xcity = useXCitySSO()
 
   return (
     <AuthLayout>
@@ -17,7 +19,7 @@ export function SignIn() {
           <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>
             {t('Sign in')}
           </h2>
-          {!status?.self_use_mode_enabled && (
+          {!xcity.enabled && !status?.self_use_mode_enabled && (
             <p className='text-muted-foreground text-left text-sm sm:text-base'>
               {t("Don't have an account?")}{' '}
               <Link

@@ -40,6 +40,7 @@ import { OAuthProviders } from '@/features/auth/components/oauth-providers'
 import { loginFormSchema } from '@/features/auth/constants'
 import { useAuthRedirect } from '@/features/auth/hooks/use-auth-redirect'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
+import { useXCitySSO } from '@/features/auth/hooks/use-xcity-sso'
 import { beginPasskeyLogin, finishPasskeyLogin } from '@/features/auth/passkey'
 import type { AuthFormProps } from '@/features/auth/types'
 
@@ -60,9 +61,10 @@ export function UserAuthForm({
   const loginFailedMessage = t('Login failed')
 
   const { status } = useStatus()
-  const passkeyLoginEnabled = Boolean(
-    status?.passkey_login ?? status?.data?.passkey_login
-  )
+  const xcity = useXCitySSO()
+  const passkeyLoginEnabled =
+    !xcity.enabled &&
+    Boolean(status?.passkey_login ?? status?.data?.passkey_login)
   const {
     isTurnstileEnabled,
     turnstileSiteKey,
@@ -255,6 +257,26 @@ export function UserAuthForm({
     } finally {
       setIsPasskeyLoading(false)
     }
+  }
+
+  // XCity SSO mode: render only the OAuth providers + legal consent. The
+  // username/password form, turnstile and passkey paths are intentionally
+  // suppressed because account credentials live on auth.xcity.one.
+  if (xcity.enabled) {
+    return (
+      <div className={cn('grid gap-4', className)}>
+        <OAuthProviders
+          status={status}
+          disabled={requiresLegalConsent && !agreedToLegal}
+        />
+        <LegalConsent
+          status={status}
+          checked={agreedToLegal}
+          onCheckedChange={setAgreedToLegal}
+          className='mt-1'
+        />
+      </div>
+    )
   }
 
   return (
