@@ -110,6 +110,10 @@ export interface SystemStatus {
     register_enabled?: boolean
     password_register_enabled?: boolean
     custom_oauth_providers?: CustomOAuthProviderInfo[]
+    xcity_sso_enabled?: boolean
+    xcity_provider_label?: string
+    xcity_dashboard_url?: string
+    xcity_signup_url?: string
     [key: string]: unknown
   }
   // Allow direct access to common properties
@@ -152,6 +156,10 @@ export interface SystemStatus {
   register_enabled?: boolean
   password_register_enabled?: boolean
   custom_oauth_providers?: CustomOAuthProviderInfo[]
+  xcity_sso_enabled?: boolean
+  xcity_provider_label?: string
+  xcity_dashboard_url?: string
+  xcity_signup_url?: string
   [key: string]: unknown
 }
 
