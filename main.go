@@ -174,14 +174,22 @@ func main() {
 	server.Use(middleware.PoweredBy())
 	server.Use(middleware.I18n())
 	middleware.SetUpLogger(server)
-	// Initialize session store
+	// Initialize session store.
+	//
+	// For cross-subdomain SSO (e.g. xct.xcity.one ↔ chat.xcity.one sharing the
+	// same login state) the cookie domain must be the parent domain
+	// (".xcity.one") and SameSite must be Lax — strict-mode cookies are not sent
+	// on cross-site top-level navigations and so break the OAuth callback.
+	// All three are env-controlled to keep the default (single-domain, strict)
+	// behavior unchanged for existing deployments.
 	store := cookie.NewStore([]byte(common.SessionSecret))
 	store.Options(sessions.Options{
 		Path:     "/",
+		Domain:   common.GetEnvOrDefaultString("SESSION_COOKIE_DOMAIN", ""),
 		MaxAge:   2592000, // 30 days
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteStrictMode,
+		Secure:   common.GetEnvOrDefaultBool("SESSION_COOKIE_SECURE", false),
+		SameSite: common.ParseSessionSameSite(common.GetEnvOrDefaultString("SESSION_COOKIE_SAMESITE", "strict")),
 	})
 	server.Use(sessions.Sessions("session", store))
 
