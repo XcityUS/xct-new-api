@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
 import { getCurrencyLabel, isCurrencyDisplayEnabled } from '@/lib/currency'
@@ -9,12 +9,46 @@ import { useStatus } from '@/hooks/use-status'
 import { Button } from '@/components/ui/button'
 import { StaggerContainer, StaggerItem } from '@/components/page-transition'
 import { useSummaryCardsConfig } from '@/features/dashboard/hooks/use-dashboard-config'
+import { useXCitySSO } from '@/features/auth/hooks/use-xcity-sso'
 import { StatCard } from '../ui/stat-card'
 
 export function SummaryCards() {
   const { t } = useTranslation()
   const user = useAuthStore((state) => state.auth.user)
   const { status, loading } = useStatus()
+  const xcity = useXCitySSO()
+
+  // XCity SSO mode: balance/quota/usage live on xcity.one — replace the
+  // numeric stat row with a single banner pointing the user there.
+  if (xcity.enabled) {
+    return (
+      <div className='flex flex-col items-start justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:p-5'>
+        <div className='space-y-1'>
+          <p className='text-sm font-medium'>
+            {t('Account balance and usage live on {{name}}', {
+              name: xcity.providerLabel,
+            })}
+          </p>
+          <p className='text-muted-foreground text-xs'>
+            {t(
+              'Top up, view usage, and manage billing from your {{name}} dashboard.',
+              { name: xcity.providerLabel }
+            )}
+          </p>
+        </div>
+        <Button asChild size='sm' className='gap-1.5'>
+          <a
+            href={xcity.dashboardUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <ExternalLink className='size-3.5' />
+            {t('Open {{name}} dashboard', { name: xcity.providerLabel })}
+          </a>
+        </Button>
+      </div>
+    )
+  }
 
   const summaryValues = useMemo(() => {
     const remainQuota = Number(user?.quota ?? 0)
