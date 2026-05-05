@@ -1,6 +1,8 @@
 import z from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 import { Pricing } from '@/features/pricing'
+import { XcityRedirectPage } from '@/components/xcity-redirect-page'
+import { useXCitySSO } from '@/features/auth/hooks/use-xcity-sso'
 
 const pricingSearchSchema = z.object({
   search: z.string().optional(),
@@ -15,7 +17,20 @@ const pricingSearchSchema = z.object({
   rechargePrice: z.boolean().optional(),
 })
 
+function PricingRoute() {
+  const xcity = useXCitySSO()
+  if (xcity.enabled) {
+    return (
+      <XcityRedirectPage
+        dashboardUrl={xcity.dashboardUrl}
+        providerLabel={xcity.providerLabel}
+      />
+    )
+  }
+  return <Pricing />
+}
+
 export const Route = createFileRoute('/pricing/')({
   validateSearch: pricingSearchSchema,
-  component: Pricing,
+  component: PricingRoute,
 })

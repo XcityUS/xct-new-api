@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { User, Wallet, LogOut, Settings } from 'lucide-react'
+import { ExternalLink, User, Wallet, LogOut, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
 import { ROLE } from '@/lib/roles'
 import useDialogState from '@/hooks/use-dialog'
 import { useUserDisplay } from '@/hooks/use-user-display'
+import { useXCitySSO } from '@/features/auth/hooks/use-xcity-sso'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,6 +26,7 @@ export function ProfileDropdown() {
   const user = useAuthStore((state) => state.auth.user)
   const { displayName, initials, roleLabel } = useUserDisplay(user)
   const isSuperAdmin = user?.role === ROLE.SUPER_ADMIN
+  const xcity = useXCitySSO()
 
   return (
     <>
@@ -87,15 +89,31 @@ export function ProfileDropdown() {
               </Link>
             </SheetClose>
 
-            <SheetClose asChild>
-              <Link
-                to='/wallet'
-                className='text-primary/60 hover:text-primary/80 flex items-center gap-2.5 border-b p-2.5 transition-colors'
-              >
-                <Wallet className='size-4' />
-                {t('Wallet')}
-              </Link>
-            </SheetClose>
+            {xcity.enabled ? (
+              <SheetClose asChild>
+                <a
+                  href={xcity.dashboardUrl}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary/60 hover:text-primary/80 flex items-center gap-2.5 border-b p-2.5 transition-colors'
+                >
+                  <ExternalLink className='size-4' />
+                  {t('Manage account on {{name}}', {
+                    name: xcity.providerLabel,
+                  })}
+                </a>
+              </SheetClose>
+            ) : (
+              <SheetClose asChild>
+                <Link
+                  to='/wallet'
+                  className='text-primary/60 hover:text-primary/80 flex items-center gap-2.5 border-b p-2.5 transition-colors'
+                >
+                  <Wallet className='size-4' />
+                  {t('Wallet')}
+                </Link>
+              </SheetClose>
+            )}
 
             {/* System Settings - only for super admin */}
             {isSuperAdmin && (
