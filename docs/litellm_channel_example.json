@@ -1,0 +1,129 @@
+{
+  "description": "Example channel configuration for LiteLLM integration",
+  "examples": {
+    "user_key_channel": {
+      "type": 1,
+      "name": "LiteLLM - User Key",
+      "base_url": "https://tokenhub.xcity.one",
+      "key": "sk-xxxxxxxxxxxxxxxx",
+      "models": "gpt-4,gpt-4-turbo,gpt-3.5-turbo,claude-3-opus-20240229,claude-3-sonnet-20240229,claude-3-haiku-20240307",
+      "status": 1,
+      "weight": 100,
+      "group": "default",
+      "test_model": "gpt-3.5-turbo",
+      "other": "",
+      "remark": "LiteLLM integration - User's virtual key from xcity-home"
+    },
+    "service_key_channel": {
+      "type": 1,
+      "name": "LiteLLM - Service Key",
+      "base_url": "https://tokenhub.xcity.one",
+      "key": "sk-service-xxxxxxxxxxxxxxxx",
+      "models": "gpt-4,gpt-4-turbo,gpt-3.5-turbo,claude-3-opus-20240229,claude-3-sonnet-20240229",
+      "status": 1,
+      "weight": 100,
+      "group": "default",
+      "test_model": "gpt-3.5-turbo",
+      "other": "",
+      "remark": "LiteLLM integration - Shared service key for internal tracking"
+    },
+    "multi_model_channel": {
+      "type": 1,
+      "name": "LiteLLM - Multi-Provider",
+      "base_url": "https://tokenhub.xcity.one",
+      "key": "sk-xxxxxxxxxxxxxxxx",
+      "models": "gpt-4,claude-3-opus-20240229,gemini-pro,llama-2-70b,mistral-large",
+      "status": 1,
+      "weight": 100,
+      "group": "premium",
+      "test_model": "gpt-4",
+      "model_mapping": "{\"gpt-4-32k\": \"gpt-4\", \"claude-v1\": \"claude-3-opus-20240229\"}",
+      "remark": "Multi-provider access through LiteLLM with model mapping"
+    }
+  },
+  "api_usage": {
+    "create_channel": {
+      "method": "POST",
+      "endpoint": "/api/channel",
+      "headers": {
+        "Authorization": "Bearer YOUR_ADMIN_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "type": 1,
+        "name": "LiteLLM Channel",
+        "base_url": "https://tokenhub.xcity.one",
+        "key": "sk-xxxxxxxxxxxxxxxx",
+        "models": "gpt-4,gpt-3.5-turbo",
+        "status": 1
+      }
+    },
+    "update_channel": {
+      "method": "PUT",
+      "endpoint": "/api/channel/:id",
+      "headers": {
+        "Authorization": "Bearer YOUR_ADMIN_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "base_url": "https://tokenhub.xcity.one",
+        "key": "sk-new-key-xxxxxxxxxxxxxxxx"
+      }
+    },
+    "test_channel": {
+      "method": "GET",
+      "endpoint": "/api/channel/test/:id",
+      "headers": {
+        "Authorization": "Bearer YOUR_ADMIN_TOKEN"
+      },
+      "description": "Tests the channel by making a request to the configured endpoint"
+    }
+  },
+  "sql_examples": {
+    "create_channel_mysql": "INSERT INTO channels (type, name, base_url, `key`, models, status, weight, created_time) VALUES (1, 'LiteLLM Router', 'https://tokenhub.xcity.one', 'sk-xxxxxxxxxxxxxxxx', 'gpt-4,gpt-3.5-turbo', 1, 100, UNIX_TIMESTAMP());",
+    "create_channel_postgres": "INSERT INTO channels (type, name, base_url, key, models, status, weight, created_time) VALUES (1, 'LiteLLM Router', 'https://tokenhub.xcity.one', 'sk-xxxxxxxxxxxxxxxx', 'gpt-4,gpt-3.5-turbo', 1, 100, EXTRACT(EPOCH FROM NOW())::BIGINT);",
+    "create_channel_sqlite": "INSERT INTO channels (type, name, base_url, key, models, status, weight, created_time) VALUES (1, 'LiteLLM Router', 'https://tokenhub.xcity.one', 'sk-xxxxxxxxxxxxxxxx', 'gpt-4,gpt-3.5-turbo', 1, 100, strftime('%s', 'now'));",
+    "update_existing_channels": "UPDATE channels SET base_url = 'https://tokenhub.xcity.one' WHERE type = 1 AND (base_url = '' OR base_url = 'https://api.openai.com');",
+    "find_channels_to_migrate": "SELECT id, name, type, base_url FROM channels WHERE type = 1 AND (base_url = '' OR base_url IS NULL OR base_url = 'https://api.openai.com');"
+  },
+  "validation": {
+    "test_request": {
+      "description": "Test request to verify LiteLLM integration",
+      "curl_command": "curl -X POST http://localhost:3000/v1/chat/completions -H 'Content-Type: application/json' -H 'Authorization: Bearer YOUR_XCT_NEW_API_TOKEN' -d '{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}]}'",
+      "expected_response": {
+        "status": 200,
+        "body": {
+          "id": "chatcmpl-xxx",
+          "object": "chat.completion",
+          "model": "gpt-3.5-turbo",
+          "choices": [
+            {
+              "message": {
+                "role": "assistant",
+                "content": "Hello! How can I assist you today?"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "check_logs": {
+      "description": "Verify requests are routed through LiteLLM",
+      "patterns": [
+        "Request URL: https://tokenhub.xcity.one",
+        "Channel BaseURL: https://tokenhub.xcity.one",
+        "Relay Mode: chat completions"
+      ]
+    }
+  },
+  "notes": {
+    "channel_type": "Type 1 = OpenAI. LiteLLM provides OpenAI-compatible API.",
+    "base_url": "Do not include /v1 suffix. The adapter will append the correct path.",
+    "models": "Comma-separated list of models available through this channel.",
+    "key_format": "LiteLLM virtual keys start with 'sk-' prefix.",
+    "status": "1 = Enabled, 2 = Disabled",
+    "weight": "Used for load balancing when multiple channels are available. Higher weight = higher priority.",
+    "group": "Used for organizing channels. 'default' is the default group.",
+    "model_mapping": "Optional JSON mapping to translate client model names to upstream model names."
+  }
+}
