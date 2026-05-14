@@ -1,6 +1,20 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SummaryCards } from './summary-cards'
+
+function renderWithQueryClient(ui: React.ReactElement) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+  )
+}
+
+vi.mock('@/features/dashboard/api', () => ({
+  getUserQuotaDates: vi.fn(async () => ({ data: [] })),
+}))
 
 const useStatusMock = vi.fn(() => ({ status: {}, loading: false }))
 vi.mock('@/hooks/use-status', () => ({
@@ -82,7 +96,7 @@ describe('SummaryCards', () => {
       signupUrl: 'https://auth.xcity.one',
     })
 
-    render(<SummaryCards />)
+    renderWithQueryClient(<SummaryCards />)
 
     expect(screen.getAllByTestId('stat-card')).toHaveLength(3)
     expect(screen.getByText('Balance')).toBeInTheDocument()
@@ -100,7 +114,7 @@ describe('SummaryCards', () => {
       signupUrl: 'https://auth.xcity.one',
     })
 
-    render(<SummaryCards />)
+    renderWithQueryClient(<SummaryCards />)
 
     // Numeric stat cards are gone…
     expect(screen.queryAllByTestId('stat-card')).toHaveLength(0)

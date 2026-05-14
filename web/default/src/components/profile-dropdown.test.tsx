@@ -33,36 +33,49 @@ vi.mock('@/components/sign-out-dialog', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-  }: {
-    children: React.ReactNode
-    to: string
-  }) => <a href={to}>{children}</a>,
+  useNavigate: () => vi.fn(),
 }))
 
-// Force the Sheet open so its contents render — Radix's Sheet uses a portal
-// that gates content behind the trigger click otherwise.
-vi.mock('@/components/ui/sheet', () => ({
-  Sheet: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SheetTrigger: ({ children }: { children: React.ReactNode }) => (
+// Pass-through DropdownMenu primitives so menu items render inline (no portal,
+// no trigger click required). `DropdownMenuItem` honors Base UI's `render` prop
+// so the test can assert against the resulting <a> for the XCity case.
+vi.mock('@/components/ui/dropdown-menu', () => {
+  type ItemProps = {
+    children?: React.ReactNode
+    render?: React.ReactElement
+  } & Record<string, unknown>
+
+  const PassThrough = ({ children }: { children?: React.ReactNode }) => (
     <>{children}</>
-  ),
-  SheetContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SheetHeader: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SheetTitle: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SheetClose: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
+  )
+
+  const DropdownMenuItem = ({ children, render: renderProp, ...rest }: ItemProps) => {
+    if (renderProp) {
+      const Element = renderProp.type as React.ElementType
+      return (
+        <Element {...renderProp.props} {...rest}>
+          {children}
+        </Element>
+      )
+    }
+    return (
+      <button type='button' {...rest}>
+        {children}
+      </button>
+    )
+  }
+
+  return {
+    DropdownMenu: PassThrough,
+    DropdownMenuTrigger: PassThrough,
+    DropdownMenuContent: PassThrough,
+    DropdownMenuItem,
+    DropdownMenuSeparator: () => null,
+  }
+})
 
 describe('ProfileDropdown', () => {
-  it('shows the local Wallet link in normal mode', () => {
+  it('shows the local Wallet menu item in normal mode', () => {
     useXCitySSOMock.mockReturnValue({
       enabled: false,
       providerLabel: 'XCity',
@@ -72,9 +85,9 @@ describe('ProfileDropdown', () => {
 
     render(<ProfileDropdown />)
 
-    const wallet = screen.getByRole('link', { name: /Wallet/i })
-    expect(wallet).toHaveAttribute('href', '/wallet')
-    // The off-app link MUST NOT appear in normal mode.
+    // Wallet is a button (navigates via onClick), not an anchor, in normal mode.
+    expect(screen.getByRole('button', { name: /Wallet/i })).toBeInTheDocument()
+    // The off-app XCity link MUST NOT appear in normal mode.
     expect(
       screen.queryByRole('link', { name: /Manage account on/i })
     ).not.toBeInTheDocument()
@@ -96,9 +109,9 @@ describe('ProfileDropdown', () => {
     expect(xcity).toHaveAttribute('href', 'https://xcity.one/dashboard')
     expect(xcity).toHaveAttribute('target', '_blank')
     expect(xcity).toHaveAttribute('rel', 'noopener noreferrer')
-    // Local wallet link is gone.
+    // Local wallet button is gone.
     expect(
-      screen.queryByRole('link', { name: /^Wallet$/i })
+      screen.queryByRole('button', { name: /^Wallet$/i })
     ).not.toBeInTheDocument()
   })
 })
