@@ -1,0 +1,39 @@
+{
+  "name": "xct-new-api-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for xct-new-api — expose 300+ AI models to Cursor, Claude Desktop, Windsurf, VS Code and any MCP-compatible client",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "llm",
+    "openai",
+    "claude",
+    "gemini"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": {
+    "xct-new-api-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
