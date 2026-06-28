@@ -337,6 +337,22 @@ func SetApiRouter(router *gin.Engine) {
 			taskRoute.GET("/", middleware.AdminAuth(), controller.GetAllTask)
 		}
 
+		// Marketplace: read-only agent/skills catalogue from Tokenhub
+		marketplaceRoute := apiRouter.Group("/marketplace")
+		marketplaceRoute.Use(middleware.UserAuth())
+		{
+			marketplaceRoute.GET("/agents", controller.GetMarketplaceAgents)
+			marketplaceRoute.GET("/agents/:id", controller.GetMarketplaceAgent)
+			marketplaceRoute.GET("/skills", controller.GetMarketplaceSkills)
+		}
+
+		// Agent A2A proxy — authenticated via xct-new-api Token
+		agentProxyRoute := apiRouter.Group("/agent")
+		agentProxyRoute.Use(middleware.TokenAuth())
+		{
+			agentProxyRoute.Any("/*path", controller.AgentProxy)
+		}
+
 		vendorRoute := apiRouter.Group("/vendors")
 		vendorRoute.Use(middleware.AdminAuth())
 		{
