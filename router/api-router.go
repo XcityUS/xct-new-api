@@ -188,6 +188,16 @@ func SetApiRouter(router *gin.Engine) {
 			optionRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 用于迁移检测的旧键，下个版本会删除
 		}
 
+		// L-016: Cloudflare x402 monetization gateway (root only)
+		x402Route := apiRouter.Group("/cloudflare-x402")
+		x402Route.Use(middleware.RootAuth())
+		{
+			x402Route.GET("/status", controller.GetCloudflareX402Status)
+			x402Route.PUT("/settings", controller.UpdateCloudflareX402Settings)
+			x402Route.GET("/projects", controller.GetCloudflareX402Projects)
+			x402Route.PUT("/projects/:project", controller.ToggleCloudflareX402Project)
+		}
+
 		// Custom OAuth provider management (root only)
 		customOAuthRoute := apiRouter.Group("/custom-oauth-provider")
 		customOAuthRoute.Use(middleware.RootAuth())

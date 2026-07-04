@@ -1,0 +1,20 @@
+{
+  "name": "xcity-x402-gateway",
+  "version": "1.0.0",
+  "description": "XCity Cloudflare x402 Monetization Gateway (L-016)",
+  "scripts": {
+    "dev": "wrangler dev --env staging",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "rollback": "wrangler rollback",
+    "test": "vitest run",
+    "test:e2e": "vitest run e2e/"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260101.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "@cloudflare/vitest-pool-workers": "^0.5.0",
+    "wrangler": "^3.80.0"
+  }
+}

@@ -1,0 +1,61 @@
+name = "xcity-x402-gateway"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Sub-task 6: versioned deployments enable 30-second rollback
+# Use: wrangler rollback <deployment-id>
+
+[[kv_namespaces]]
+binding = "PAYMENT_CACHE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_KV_NAMESPACE_PREVIEW_ID"
+
+# ─────────────────────────────────────────
+# Production environment (xcity.one)
+# ─────────────────────────────────────────
+[env.production]
+vars = { UPSTREAM_ORIGIN = "https://api.xcity.one" }
+
+# Sub-task 1: per-project x402 opt-in flag
+# Sub-task 3: facilitator URL injection with 70/30 routing
+[env.production.vars]
+X402_ENABLED          = "true"
+X402_FACILITATOR_URL  = "https://api.cdp.coinbase.com/platform/x402"
+X401_FACILITATOR_URL  = "https://x401.xcity.one"
+X402_ROUTE_PERCENT    = "70"
+X402_PRICE_USDC       = "10000"
+X402_NETWORK          = "eip155:8453"
+# X402_RECEIVER_ADDRESS = set via wrangler secret put X402_RECEIVER_ADDRESS
+
+# ─────────────────────────────────────────
+# Staging environment
+# ─────────────────────────────────────────
+[env.staging]
+vars = { UPSTREAM_ORIGIN = "https://api-staging.xcity.one" }
+
+[env.staging.vars]
+X402_ENABLED          = "true"
+X402_FACILITATOR_URL  = "https://api.cdp.coinbase.com/platform/x402"
+X401_FACILITATOR_URL  = "https://x401-staging.xcity.one"
+X402_ROUTE_PERCENT    = "70"
+X402_PRICE_USDC       = "10000"
+X402_NETWORK          = "eip155:84532"
+# ^ Base Sepolia for staging
+
+# ─────────────────────────────────────────
+# CF Pages projects (sub-task 1: per-project opt-in)
+# Add one [env.<project-name>] block per CF Pages project.
+# Current 4 sites (scope limit per issue: CF Pages > 10 is out of scope)
+# ─────────────────────────────────────────
+[env.xcity-home]
+vars = { UPSTREAM_ORIGIN = "https://xcity.one", X402_ENABLED = "false" }
+
+[env.xcity-chat]
+vars = { UPSTREAM_ORIGIN = "https://chat.xcity.one", X402_ENABLED = "false" }
+
+[env.xcity-api]
+vars = { UPSTREAM_ORIGIN = "https://api.xcity.one", X402_ENABLED = "true" }
+
+[env.xcity-admin]
+vars = { UPSTREAM_ORIGIN = "https://admin.xcity.one", X402_ENABLED = "false" }
