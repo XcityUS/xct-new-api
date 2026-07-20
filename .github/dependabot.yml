@@ -1,0 +1,44 @@
+# Dependabot config for xct-new-api.
+#
+# Dependency surfaces:
+#   1. Go modules — go.mod + go.sum
+#   2. GitHub Actions workflows — .github/workflows/
+#
+# Strategy:
+#   - Group minor + patch Go updates into a single weekly PR
+#   - Weekly Monday 09:00 ET
+#   - Commit prefix: chore(deps)
+
+version: 2
+
+updates:
+  # Go modules
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      go-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      actions-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
