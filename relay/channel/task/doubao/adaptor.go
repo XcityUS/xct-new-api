@@ -49,6 +49,7 @@ type requestPayload struct {
 	ExecutionExpiresAfter *dto.IntValue  `json:"execution_expires_after,omitempty"`
 	GenerateAudio         *dto.BoolValue `json:"generate_audio,omitempty"`
 	Draft                 *dto.BoolValue `json:"draft,omitempty"`
+	OmniReferenceTaskType string         `json:"omni_reference_task_type,omitempty"`
 	Tools                 []struct {
 		Type string `json:"type,omitempty"`
 	} `json:"tools,omitempty"`
@@ -72,7 +73,7 @@ type responseTask struct {
 	Content struct {
 		VideoURL string `json:"video_url"`
 	} `json:"content"`
-	Seed            int    `json:"seed"`
+	Seed            *int   `json:"seed,omitempty"`
 	Resolution      string `json:"resolution"`
 	Duration        int    `json:"duration"`
 	Ratio           string `json:"ratio"`
@@ -356,6 +357,7 @@ func (a *TaskAdaptor) ConvertToOpenAIVideo(originTask *model.Task) ([]byte, erro
 	openAIVideo.CreatedAt = originTask.CreatedAt
 	openAIVideo.CompletedAt = originTask.UpdatedAt
 	openAIVideo.Model = originTask.Properties.OriginModelName
+	openAIVideo.Seed = dResp.Seed
 
 	if dResp.Status == "failed" {
 		openAIVideo.Error = &dto.OpenAIVideoError{
