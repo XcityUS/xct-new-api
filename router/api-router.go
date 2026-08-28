@@ -348,6 +348,14 @@ func SetApiRouter(router *gin.Engine) {
 			vendorRoute.DELETE("/:id", controller.DeleteVendorMeta)
 		}
 
+		marketplaceRoute := apiRouter.Group("/marketplace")
+		marketplaceRoute.Use(middleware.UserAuth())
+		{
+			marketplaceRoute.GET("/agents", controller.GetMarketplaceAgents)
+			marketplaceRoute.GET("/agents/:id", controller.GetMarketplaceAgent)
+			marketplaceRoute.GET("/skills", controller.GetMarketplaceSkills)
+		}
+
 		modelsRoute := apiRouter.Group("/models")
 		modelsRoute.Use(middleware.AdminAuth())
 		{
