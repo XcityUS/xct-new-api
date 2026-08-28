@@ -41,6 +41,15 @@ func SetRelayRouter(router *gin.Engine) {
 		})
 	}
 
+	// xct-skills marketplace personas (read-only, user token auth; writes live under /api)
+	xctSkillsRouter := router.Group("/v1/xct-skills")
+	xctSkillsRouter.Use(middleware.RouteTag("relay"))
+	xctSkillsRouter.Use(middleware.TokenAuth())
+	{
+		xctSkillsRouter.GET("", controller.ListXctSkills)
+		xctSkillsRouter.GET("/:id", controller.GetXctSkill)
+	}
+
 	geminiRouter := router.Group("/v1beta/models")
 	geminiRouter.Use(middleware.RouteTag("relay"))
 	geminiRouter.Use(middleware.TokenAuth())

@@ -318,6 +318,15 @@ func SetApiRouter(router *gin.Engine) {
 			groupRoute.GET("/", controller.GetGroups)
 		}
 
+		xctSkillRoute := apiRouter.Group("/xct-skills")
+		xctSkillRoute.Use(middleware.AdminAuth())
+		{
+			xctSkillRoute.GET("/", controller.GetAllXctSkills)
+			xctSkillRoute.POST("/", controller.AddXctSkill)
+			xctSkillRoute.PUT("/:skill_id", controller.UpdateXctSkill)
+			xctSkillRoute.DELETE("/:skill_id", controller.DeleteXctSkill)
+		}
+
 		prefillGroupRoute := apiRouter.Group("/prefill_group")
 		prefillGroupRoute.Use(middleware.AdminAuth())
 		{
